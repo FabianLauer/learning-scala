@@ -1,0 +1,1 @@
+Prints a fibonacci series to the console.

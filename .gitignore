@@ -1,0 +1,2 @@
+*.log
+.ensime_cache/*
