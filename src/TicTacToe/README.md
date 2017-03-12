@@ -1,0 +1,1 @@
+Play Tic Tac Toe in a terminal. Your opponent will be very unpredictable — its completely random.
