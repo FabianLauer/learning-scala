@@ -165,6 +165,15 @@ abstract class Game(
 	}
 
 
+	private def alternatePlayer(): Unit = {
+		if (player1 == currentPlayer) {
+			currentPlayer = player2
+		} else {
+			currentPlayer = player1
+		}
+	}
+
+
 	// Check whether the game has ended (for any reason).
 	def gameHasEnded(): Boolean = {
 		return (
@@ -195,15 +204,6 @@ abstract class Game(
 	// Check if a player has a winning series.
 	def doesPlayerHaveWinningSeries(player: Player): Boolean = {
 		return false
-	}
-
-
-	private def alternatePlayer(): Unit = {
-		if (player1 == currentPlayer) {
-			currentPlayer = player2
-		} else {
-			currentPlayer = player1
-		}
 	}
 }
 
