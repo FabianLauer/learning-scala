@@ -58,6 +58,13 @@ class BoardModel(val width: Int, val height: Int) {
 	// Returns the field at a certain row and column.
 	def getFieldAt(row: Int, column: Int): FieldModel = fields(row)(column)
 
+	// Returns all fields that have already been seized.
+	def getSeizedFields(): List[FieldModel] = {
+		return getFieldsAsArray()
+			.toList
+			.filter(field => field.getFieldState() != FieldState.Empty)
+	}
+
 	// Returns all fields that haven't been seized yet.
 	def getEmptyFields(): List[FieldModel] = {
 		return getFieldsAsArray()
@@ -116,7 +123,10 @@ abstract class Player(game: Game) {
 
 	// Checks if a field was already seized by any player.
 	protected def wasFieldAlreadySeized(row: Int, column: Int): Boolean = {
-		return game.getBoardModel().getFieldAt(row, column).getFieldState() != FieldState.Empty
+		scala.util.control.Exception.ignoring(classOf[Exception]) {
+			return game.getBoardModel().getFieldAt(row, column).getFieldState() != FieldState.Empty
+		}
+		return false
 	}
 }
 
@@ -135,8 +145,8 @@ abstract class Game(
 
 	// Initialization
 
-	private val player1 = createPlayer1()
-	private val player2 = createPlayer2()
+	val player1 = createPlayer1()
+	val player2 = createPlayer2()
 
 	// The player that is about to or has just made his turn.
 	// We initialize this with a random player.
@@ -203,7 +213,43 @@ abstract class Game(
 
 	// Check if a player has a winning series.
 	def doesPlayerHaveWinningSeries(player: Player): Boolean = {
-		return false
+		val board = getBoardModel()
+
+		if (board.getSeizedFields().length <= winningSeries) {
+			return false
+		}
+
+		val desiredFieldState = player.getPlayerFieldState()
+
+		def checkNeighbours(field: FieldModel, columnDelta: Int, rowDelta: Int): Int = {
+			for (steps <- 1 to winningSeries) {
+				try {
+					val row = field.row + (steps * rowDelta)
+					val column = field.column + (steps * columnDelta)
+					if (row < 0 || column < 0 || row > board.height || column > board.width) {
+						return 1
+					}
+					val neighbour = board.getFieldAt(row, column)
+					if (neighbour.getFieldState() != desiredFieldState) {
+						return 2
+					}
+				} catch {
+					case e: Exception => return 3
+				}
+			}
+			return 0
+		}
+
+		return board.getSeizedFields().toList.contains((field: FieldModel) => {
+			return (
+				field.getFieldState() == desiredFieldState && (
+					0 == checkNeighbours(field, 1, 0) ||
+					0 == checkNeighbours(field, 0, 1) ||
+					0 == checkNeighbours(field, 1, 1) ||
+					0 == checkNeighbours(field, 1, -1)
+				)
+			)
+		})
 	}
 }
 
@@ -216,8 +262,13 @@ class RandomComputerPlayer(game: Game) extends Player(game) {
 	// Play a single turn and return the coordinates of the field to be seized by this player as a
 	// tuple of zero-based integers (row, column).
 	def playTurnConcrete(): (Int, Int) = {
-		val emptyFields = game.getBoardModel().getEmptyFields() 
-		val index = scala.util.Random.nextInt(emptyFields.length - 1)
+		val emptyFields = game.getBoardModel().getEmptyFields()
+		val index = (
+			if (emptyFields.length <= 1)
+				0
+			else
+				scala.util.Random.nextInt(emptyFields.length - 1)
+		)
 		val field = emptyFields(index);
 		return (field.row, field.column)
 	}
@@ -246,16 +297,11 @@ class TerminalInputPlayer(game: Game) extends Player(game) {
 	def requestNumberFromUser(promptText: String, isValid: (Int) => Boolean): Int = {
 		print(promptText)
 		var input: Int = 0
-		try {
-			input = readInt()
-			if (!isValid(input))
-				throw new Exception()
-		} catch {
-			case e: Exception => {
-				println("Please enter a valid number.")
-				return requestNumberFromUser(promptText, isValid)
+		do {
+			scala.util.control.Exception.ignoring(classOf[Exception]) {
+				input = readInt()
 			}
-		}
+		} while (!isValid(input))
 		return input
 	}
 }
@@ -276,5 +322,12 @@ object TicTacToe extends Game(
 
 	def main(args: Array[String]): Unit = {
 		start()
+		if (doesPlayerHaveWinningSeries(player1)) {
+			println(s"${player1.getPlayerName()} has wins the game!")
+		} else if (doesPlayerHaveWinningSeries(player2)) {
+			println(s"${player2.getPlayerName()} has wins the game!")
+		} else {
+			println("It's a draw!")
+		}
 	}
 }
