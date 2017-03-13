@@ -67,6 +67,7 @@ class BoardModel(val width: Int, val height: Int) {
 }
 
 
+
 // Renders a BoardModel as a string.
 class StringBoardView {
 	def render(model: BoardModel): Unit = {
@@ -112,7 +113,6 @@ abstract class Player(game: Game) {
 	// Play a single turn and return the coordinates of the field to be seized by this player as a
 	// tuple of zero-based integers (row, column).
 	def playTurnConcrete(): (Int, Int)
-
 
 	// Checks if a field was already seized by any player.
 	protected def wasFieldAlreadySeized(row: Int, column: Int): Boolean = {
@@ -219,6 +219,7 @@ class RandomComputerPlayer(game: Game) extends Player(game) {
 }
 
 
+
 class TerminalInputPlayer(game: Game) extends Player(game) {
 	def getPlayerName(): String = "Player 1"
 	def getPlayerFieldState(): FieldState.FieldState = FieldState.Player
@@ -253,6 +254,7 @@ class TerminalInputPlayer(game: Game) extends Player(game) {
 		return input
 	}
 }
+
 
 
 object TicTacToe extends Game(
