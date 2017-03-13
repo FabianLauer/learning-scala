@@ -144,6 +144,7 @@ abstract class Game(
 
 	private val board = new BoardModel(boardWidth, boardHeight)
 
+
 	// Getters / Setters
 
 	def getBoardModel(): BoardModel = board
@@ -164,6 +165,7 @@ abstract class Game(
 	}
 
 
+	// Check whether the game has ended (for any reason).
 	def gameHasEnded(): Boolean = {
 		return (
 			doesAnyPlayerHaveWinningSeries() ||
@@ -172,6 +174,7 @@ abstract class Game(
 	}
 
 
+	// Checks if there's one or more empty fields on the stage.
 	def doesBoardHaveEmptyFields(): Boolean = {
 		return getBoardModel()
 			.getEmptyFields()
@@ -180,6 +183,7 @@ abstract class Game(
 	}
 
 
+	// Check if any of the players has a winning series of fields.
 	def doesAnyPlayerHaveWinningSeries(): Boolean = {
 		return (
 			doesPlayerHaveWinningSeries(player1) ||
@@ -188,6 +192,7 @@ abstract class Game(
 	}
 
 
+	// Check if a player has a winning series.
 	def doesPlayerHaveWinningSeries(player: Player): Boolean = {
 		return false
 	}
